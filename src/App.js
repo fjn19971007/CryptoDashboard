@@ -18,6 +18,7 @@ const AppLayout = styled.div`
 `;
 
 const Bar = styled.div`
+  margin-bottom: 40px;
   display: grid;
   grid-template-columns: 180px auto 100px 100px;
 `;
@@ -26,13 +27,49 @@ const Content = styled.div`
 
 `;
 
+const checkFirstVisit = () => {
+  let cryptoDashData = localStorage.getItem('cryptoDash');
+  if(!cryptoDashData) {
+    return {
+      firstVisit: true,
+      page: 'settings'
+    };
+  }
+  return {};
+}
+
 class App extends Component {
   state = {
-    page: 'dashboard'
+    page: 'dashboard',
+    ...checkFirstVisit()
   };
 
   displayingDashboard = () => this.state.page === 'dashboard';
   displayingSettings = () => this.state.page === 'settings';
+  firstVisitMessage = () => {
+    if (this.state.firstVisit) {
+      return (
+        <div>Welcome to CryptoDash, please select your favourite coins to begin.</div>
+      );
+    }
+  }
+  confirmFavourites = () => {
+    localStorage.setItem('cryptoDash', 'test');
+    this.setState({
+      firstVisit: false,
+      page: 'dashboard'
+    });
+  };
+  settingsContent = () => {
+    return (
+      <div>
+        {this.firstVisitMessage()}
+        <div onClick={this.confirmFavourites}>
+          Confirm Favourites
+        </div>
+      </div>
+    );
+  }
 
   render() {
     return (
@@ -42,12 +79,14 @@ class App extends Component {
             CryptoDashboard
           </Logo>
           <div/>
-          <ControlButton
-            active={this.displayingDashboard()}
-            onClick={() => this.setState({ page: 'dashboard' })}
-          >
-            Dashboard
-          </ControlButton>
+          {!this.state.firstVisit && (
+            <ControlButton
+              active={this.displayingDashboard()}
+              onClick={() => this.setState({ page: 'dashboard' })}
+            >
+              Dashboard
+            </ControlButton>
+          )}
           <ControlButton
             active={this.displayingSettings()}
             onClick={() => this.setState({ page: 'settings' })}
@@ -56,7 +95,7 @@ class App extends Component {
           </ControlButton>
         </Bar>
         <Content>
-          Hello
+          {this.displayingSettings() && this.settingsContent()}
         </Content>
       </AppLayout>
     );
