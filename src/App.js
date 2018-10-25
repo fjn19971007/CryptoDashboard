@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import './App.css';
 import styled, { css } from 'styled-components';
+import AppBar from './AppBar';
+const cc = require('cryptocompare');
+
 
 const Logo = styled.div`
   font-size: 1.5em;
@@ -40,9 +43,18 @@ const checkFirstVisit = () => {
 
 class App extends Component {
   state = {
-    page: 'dashboard',
+    page: 'settings',
     ...checkFirstVisit()
   };
+
+  componentDidMount() {
+    this.fetchCoins();
+  }
+
+  fetchCoins = async () => {
+    let coinList = await cc.coinList().Data;
+    this.setState({ coinList });
+  }
 
   displayingDashboard = () => this.state.page === 'dashboard';
   displayingSettings = () => this.state.page === 'settings';
@@ -60,6 +72,7 @@ class App extends Component {
       page: 'dashboard'
     });
   };
+
   settingsContent = () => {
     return (
       <div>
@@ -69,34 +82,21 @@ class App extends Component {
         </div>
       </div>
     );
+  };
+
+  loadingContent = () => {
+    if (!this.state.coinList) {
+      return <div> Loading Coins </div>
+    }
   }
 
   render() {
     return (
       <AppLayout>
-        <Bar>
-          <Logo>
-            CryptoDashboard
-          </Logo>
-          <div/>
-          {!this.state.firstVisit && (
-            <ControlButton
-              active={this.displayingDashboard()}
-              onClick={() => this.setState({ page: 'dashboard' })}
-            >
-              Dashboard
-            </ControlButton>
-          )}
-          <ControlButton
-            active={this.displayingSettings()}
-            onClick={() => this.setState({ page: 'settings' })}
-          >
-            Settings
-          </ControlButton>
-        </Bar>
-        <Content>
+        {AppBar.apply(this)}
+        {this.loadingContent() || <Content>
           {this.displayingSettings() && this.settingsContent()}
-        </Content>
+        </Content>}
       </AppLayout>
     );
   }
