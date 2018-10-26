@@ -56,11 +56,12 @@ const ChartGrid = styled.div`
 
 export default function() {
   return [
-    <CoinGrid>
+    <CoinGrid key={1}>
       {this.state.prices.map((price, index) => {
         let sym = Object.keys(price)[0];
         let data = price[sym]['USD'];
         let tileProps = {
+          key: index,
           dashboardFavorite: sym === this.state.currentFavorite,
           onClick: () => {
             this.setState({ currentFavorite: sym, graphData: null }, this.fetchGraphData);
@@ -95,7 +96,7 @@ export default function() {
         );
       })}
     </CoinGrid>,
-    <ChartGrid>
+    <ChartGrid key={2}>
       <PaddingBlue>
         <h2 style={{textAlign: 'center'}}>{this.state.coinList[this.state.currentFavorite].CoinName}</h2>
         <img
@@ -113,7 +114,7 @@ export default function() {
         >
           <option value="days">Days</option>
           <option value="weeks">Weeks</option>
-          <option selected value="months">Months</option>
+          <option value="months">Months</option>
         </ChartSelect>
         {this.state.graphData ? <ReactHighcharts config={chartsConfig.call(this)} />
           :

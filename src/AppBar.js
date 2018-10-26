@@ -8,6 +8,8 @@ const Logo = styled.div`
 
 const ControlButton = styled.div`
   cursor: pointer;
+  align-self: center;
+  font-size: 1.1em;
   ${props => props.active && css`
     text-shadow: 0px 0px 60px #03ff03;
   `}
@@ -16,14 +18,15 @@ const ControlButton = styled.div`
 const Bar = styled.div`
   margin-bottom: 40px;
   display: grid;
-  grid-template-columns: 180px auto 100px 100px;
+  grid-template-columns: 40px 180px auto 120px 120px;
 `;
 
 export default function() {
   return(
     <Bar>
-      <Logo>
-        CryptoDashboard
+      <img src='./icon.png' height="40px"></img>
+      <Logo style={{whiteSpace: 'nowrap'}}>
+        <div style={{display: 'inline', marginLeft: '20px', lineHeight: '40px'}}>CryptoDashboard</div>
       </Logo>
       <div/>
       {!this.state.firstVisit && (
