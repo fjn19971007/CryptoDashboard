@@ -1,0 +1,1 @@
+{"version":3,"sources":["/Users/Fang/udemy/cryptodashboard/src/App.css"],"names":[],"mappings":"AAAA,KACE,sBAAwB,AACxB,WAAa,AACb,8BAAmC,CACpC","file":"main.7a36df6c.chunk.css","sourcesContent":["body {\n  background-color: black;\n  color: white;\n  font-family: 'Imprima', sans-serif;\n}\n"]}
