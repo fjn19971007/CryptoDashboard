@@ -1,7 +1,8 @@
 import React from 'react';
 import styled, {css} from 'styled-components';
 import { CoinGrid, CoinTile, CoinHeaderGrid, CoinSymbol } from './CoinList';
-import { fontSizeBig, fontSize3, subtleBoxShadow, lightBlueBackground, textAlignCenter } from './Style';
+import { fontSizeBig, fontSize3, subtleBoxShadow,
+  lightBlueBackground, textAlignCenter, backgroundColor2, fontSize2 } from './Style';
 import chartsConfig from './ChartsConfig';
 import theme from './chartTheme';
 const ReactHighcharts = require('react-highcharts');
@@ -18,6 +19,16 @@ const ChangePct = styled.div`
     color: red;
   `}
 `
+
+const ChartSelect = styled.select`
+  ${backgroundColor2}
+  color: #1163c9;
+  border: 1px solid;
+  ${fontSize2}
+  margin: 5px;
+  height: 25px;
+  float: right;
+`;
 
 const TickerPrice = styled.div`
   ${fontSizeBig}
@@ -52,7 +63,7 @@ export default function() {
         let tileProps = {
           dashboardFavorite: sym === this.state.currentFavorite,
           onClick: () => {
-            this.setState({ currentFavorite: sym });
+            this.setState({ currentFavorite: sym, graphData: null }, this.fetchGraphData);
             localStorage.setItem('cryptoDash', JSON.stringify({
               ...JSON.parse(localStorage.getItem('cryptoDash')),
               currentFavorite: sym
@@ -94,7 +105,19 @@ export default function() {
         ></img>
       </PaddingBlue>
       <PaddingBlue>
-        <ReactHighcharts config={chartsConfig.call(this)} />
+        <ChartSelect
+          defaultValue={'months'}
+          onChange={e => {
+            this.setState({ timeInterval: e.target.value, graphData: null }, this.fetchGraphData);
+          }}
+        >
+          <option value="days">Days</option>
+          <option value="weeks">Weeks</option>
+          <option selected value="months">Months</option>
+        </ChartSelect>
+        {this.state.graphData ? <ReactHighcharts config={chartsConfig.call(this)} />
+          :
+        <div>Loading graph data...</div>}
       </PaddingBlue>
     </ChartGrid>
   ];
