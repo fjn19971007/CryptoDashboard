@@ -2,6 +2,11 @@ import React from 'react';
 import styled, {css} from 'styled-components';
 import { CoinGrid, CoinTile, CoinHeaderGrid, CoinSymbol } from './CoinList';
 import { fontSizeBig, fontSize3, subtleBoxShadow, lightBlueBackground, textAlignCenter } from './Style';
+import chartsConfig from './ChartsConfig';
+import theme from './chartTheme';
+const ReactHighcharts = require('react-highcharts');
+
+ReactHighcharts.Highcharts.setOptions(theme);
 
 const numberFormat = (number) => {
   return +(number + '').slice(0,7);
@@ -88,7 +93,9 @@ export default function() {
 
         ></img>
       </PaddingBlue>
-      <PaddingBlue>...</PaddingBlue>
+      <PaddingBlue>
+        <ReactHighcharts config={chartsConfig.call(this)} />
+      </PaddingBlue>
     </ChartGrid>
   ];
 }
