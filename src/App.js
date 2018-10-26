@@ -1,62 +1,91 @@
 import React, { Component } from 'react';
 import './App.css';
 import styled, { css } from 'styled-components';
+import _ from 'lodash';
 import AppBar from './AppBar';
 import CoinList from './CoinList';
+import Search from './Search';
+import Dashboard from './Dashboard';
+import { greenBoxShadow, fontSizeBig, textAlignCenter } from './Style';
+import fuzzy from 'fuzzy';
 const cc = require('cryptocompare');
 
 const MAX_FAVORITES = 10;
 
-const Logo = styled.div`
-  font-size: 1.5em;
-`;
-
-const ControlButton = styled.div`
-  cursor: pointer;
-  ${props => props.active && css`
-    text-shadow: 0px 0px 60px #03ff03;
-  `}
-`;
-
 const AppLayout = styled.div`
   padding: 40px;
-`;
-
-const Bar = styled.div`
-  margin-bottom: 40px;
-  display: grid;
-  grid-template-columns: 180px auto 100px 100px;
 `;
 
 const Content = styled.div`
 
 `;
 
+const ConfirmButton = styled.div`
+  color: #1163c9;
+  padding: 5px;
+  margin-top: 40px;
+  ${ fontSizeBig }
+  ${ textAlignCenter }
+  &:hover {
+    cursor: pointer;
+    ${ greenBoxShadow }
+  }
+`
+
+export const CenterDiv = styled.div`
+  display: grid;
+  justify-content: center;
+`
+
 const checkFirstVisit = () => {
-  let cryptoDashData = localStorage.getItem('cryptoDash');
+  let cryptoDashData = JSON.parse(localStorage.getItem('cryptoDash'));
   if(!cryptoDashData) {
     return {
       firstVisit: true,
       page: 'settings'
     };
   }
-  return {};
+  return { favorites: cryptoDashData.favorites };
 }
 
 class App extends Component {
   state = {
-    page: 'settings',
+    page: 'dashboard',
     favorites: ["ETH", "BTC", "XMR", "DOGE", "EOS"],
     ...checkFirstVisit()
   };
 
   componentDidMount() {
     this.fetchCoins();
+    this.fetchPrices();
   }
 
   fetchCoins = async () => {
     let coinList = (await cc.coinList()).Data;
     this.setState({ coinList });
+  }
+
+  fetchPrices = async () => {
+    let prices;
+    try {
+      prices = await this.prices();
+    } catch (e) {
+      this.setState({error: true});
+    }
+    console.log(prices);
+    this.setState({prices});
+  }
+  prices = async () => {
+    let returnData = [];
+    for (let i = 0; i < this.state.favorites.length; i++) {
+      try {
+        let priceData = await cc.priceFull(this.state.favorites[i], 'USD');
+        returnData.push(priceData);
+      } catch (e) {
+        console.warn('Fetch price error: ', e);
+      }
+    }
+    return returnData;
   }
 
   displayingDashboard = () => this.state.page === 'dashboard';
@@ -69,22 +98,28 @@ class App extends Component {
     }
   }
   confirmFavourites = () => {
-    localStorage.setItem('cryptoDash', 'test');
     this.setState({
       firstVisit: false,
       page: 'dashboard'
     });
+    this.fetchPrices();
+    localStorage.setItem('cryptoDash', JSON.stringify({
+      favorites: this.state.favorites
+    }));
   };
 
   settingsContent = () => {
     return (
       <div>
         {this.firstVisitMessage()}
-        <div onClick={this.confirmFavourites}>
-          Confirm Favourites
-        </div>
         <div>
           {CoinList.call(this, true)}
+          <CenterDiv>
+            <ConfirmButton onClick={this.confirmFavourites}>
+              Confirm Favourites
+            </ConfirmButton>
+          </CenterDiv>
+          {Search.call(this)}
           {CoinList.call(this)}
         </div>
       </div>
@@ -93,7 +128,12 @@ class App extends Component {
 
   loadingContent = () => {
     if (!this.state.coinList) {
-      return <div> Loading Coins </div>
+      return <div> Loading Coins... </div>
+    }
+    if (!this.state.prices) {
+      return (
+        <div> Loading Prices... </div>
+      );
     }
   }
 
@@ -106,8 +146,45 @@ class App extends Component {
   }
 
   removeCoinFromFavorites = (key) => {
-    console.log('REmove', key);
+    let favorites = [...this.state.favorites];
+    this.setState({favorites: _.pull(favorites, key)})
   }
+
+  isInFavorites = (key) => {
+    return _.includes(this.state.favorites, key)
+  }
+
+  handleFilter = _.debounce(inputValue => {
+    // Get all the coin symbols
+    let coinSymbols = Object.keys(this.state.coinList);
+    // Get all the coin names, maps symbol to name
+    let coinNames = coinSymbols.map(sym => this.state.coinList[sym].CoinName);
+    let allStringsToSearch = coinSymbols.concat(coinNames);
+    let fuzzyResults = fuzzy
+      .filter(inputValue, allStringsToSearch, {})
+      .map(result => result.string);
+
+    let filteredCoins = _.pickBy(this.state.coinList, (result, symKey) => {
+      let coinName = result.CoinName;
+      // If our fuzzy results contains this symbol OR the coinName, include it (return true).
+      return (
+        _.includes(fuzzyResults, symKey) || _.includes(fuzzyResults, coinName)
+      );
+    });
+
+    this.setState({ filteredCoins });
+  }, 500);
+
+  filterCoins = e => {
+    let inputValue = _.get(e, 'target.value');
+    if (!inputValue) {
+      this.setState({
+        filteredCoins: null
+      });
+      return;
+    }
+    this.handleFilter(inputValue);
+  };
 
   render() {
     return (
@@ -115,6 +192,7 @@ class App extends Component {
         {AppBar.apply(this)}
         {this.loadingContent() || <Content>
           {this.displayingSettings() && this.settingsContent()}
+          {this.displayingDashboard() && Dashboard.call(this)}
         </Content>}
       </AppLayout>
     );
