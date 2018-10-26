@@ -45,7 +45,8 @@ const checkFirstVisit = () => {
       page: 'settings'
     };
   }
-  return { favorites: cryptoDashData.favorites };
+  let { favorites, currentFavorite } = cryptoDashData;
+  return { favorites, currentFavorite };
 }
 
 class App extends Component {
@@ -98,13 +99,17 @@ class App extends Component {
     }
   }
   confirmFavourites = () => {
+    let currentFavorite = this.state.favorites[0];
     this.setState({
       firstVisit: false,
-      page: 'dashboard'
+      page: 'dashboard',
+      prices: null,
+      currentFavorite: this.state.favorites[0]
     });
     this.fetchPrices();
     localStorage.setItem('cryptoDash', JSON.stringify({
-      favorites: this.state.favorites
+      favorites: this.state.favorites,
+      currentFavorite
     }));
   };
 
