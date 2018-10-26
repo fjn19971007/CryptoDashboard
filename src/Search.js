@@ -23,7 +23,7 @@ export default function() {
   return (
     <SearchContainer>
       <h2> Search all coins </h2>
-      <SearchInput onKeyUp={this.filterCoins}/>
+      <SearchInput onChange={this.filterCoins}/>
     </SearchContainer>
   )
 }

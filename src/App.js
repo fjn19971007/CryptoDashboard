@@ -67,9 +67,20 @@ class App extends Component {
     this.fetchGraphData();
   }
 
+  validateFavorites = (coinList) => {
+    let validateFavorites = [];
+    this.state.favorites.forEach(favorite => {
+      if (coinList[favorite]) {
+        validateFavorites.push(favorite);
+      }
+    });
+    return validateFavorites;
+  }
+
   fetchCoins = async () => {
     let coinList = (await cc.coinList()).Data;
-    this.setState({ coinList });
+    console.log(Object.keys(coinList).length)
+    this.setState({ coinList, favorites: this.validateFavorites(coinList) });
   }
 
   fetchPrices = async () => {
@@ -216,7 +227,7 @@ class App extends Component {
     });
 
     this.setState({ filteredCoins });
-  }, 500);
+  }, 1000);
 
   filterCoins = e => {
     let inputValue = _.get(e, 'target.value');
