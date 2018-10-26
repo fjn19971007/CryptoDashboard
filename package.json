@@ -2,7 +2,7 @@
   "name": "cryptodashboard",
   "version": "0.1.0",
   "private": true,
-  "homepage": "http://gitname.github.io/react-gh-pages",
+  "homepage": "https://fjn19971007.github.io/CryptoDashboard/",
   "dependencies": {
     "cryptocompare": "^0.5.0",
     "fuzzy": "^0.1.3",
